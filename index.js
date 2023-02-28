@@ -1,10 +1,14 @@
 import express from "express";
+import router from "./routes/index.js";
 
 const port = 3001;
 const app = express();
 
-app.get("/", (req, res) => res.send("Homepage"));
+/* MIDDLEWARES */
+//use express router
+app.use("/", router);
 
+/* RUN SERVER */
 app.listen(port, function (err) {
   if (err) {
     console.log(`Error in running server : ${err}`);
