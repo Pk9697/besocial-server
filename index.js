@@ -9,7 +9,7 @@ const app = express();
 
 /* MIDDLEWARES */
 app.use(express.json());
-app.use(passport.initialize());
+// app.use(passport.initialize());
 // app.use(passport.session());
 
 //use express router

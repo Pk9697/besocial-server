@@ -11,7 +11,7 @@ const opts={
 }
 
 passport.use(new JWTStrategy(opts,async function(jwtPayload,done){
-    // console.log(jwtPayload)
+    // here User. any methods does not support callback fxns anymore so use async await for that
     try {
         const user=await User.findOne({_id: jwtPayload._id})
         if(user){
