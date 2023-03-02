@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
+//telling mongoose that this->'User' is a model in the database
 const User = mongoose.model("User", userSchema);
-
+//now exporting this User schema
 export default User;
