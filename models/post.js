@@ -6,11 +6,18 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    //will refer to object Id of a user who posted with referance to User Schema
+    //will refer to object Id of a user who posted with reference to User Schema
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    //include the array of ids of all comments in this post schema itself for fetching comments for a particular post faster
+    comments:[
+      {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Comment"
+      }
+    ]
   },
   {
     timestamps: true,
