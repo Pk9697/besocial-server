@@ -1,5 +1,6 @@
 import Post from "../../../models/post.js";
 import Comment from "../../../models/comment.js";
+
 export const createComment = async (req, res) => {
   try {
     const { postId, content } = req.body;
@@ -37,3 +38,37 @@ export const createComment = async (req, res) => {
     });
   }
 };
+
+export const deleteComment=async(req,res)=>{
+    try {
+        const {commentId} =req.params
+        const comment=await Comment.findById(commentId)
+        if(!comment){
+            return res.status(422).json({
+                success: false,
+                message: "Comment doesn't exist",
+            });
+        }
+
+        //authorize user
+        if(!comment.user.equals(req.user._id)){
+            return res.status(422).json({
+                success: false,
+                message: "You are not authorized to delete this Comment!",
+            });
+        }
+
+        await Post.findByIdAndUpdate(comment.post,{$pull:{comments:commentId}})
+        await Comment.findByIdAndDelete(commentId)
+        return res.status(200).json({
+            success:true,
+            message:'Comment and associated likes deleted successfully and comment is pulled from post'
+        })
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+        });
+    }
+}

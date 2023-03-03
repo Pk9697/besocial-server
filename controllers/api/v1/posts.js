@@ -1,3 +1,4 @@
+import Comment from "../../../models/comment.js";
 import Post from "../../../models/post.js";
 
 /* CREATE POST- requires authentication */
@@ -43,11 +44,49 @@ export const getAllPosts = async (req, res) => {
         populate: {
           path: "user",
         },
-      })
+      });
     return res.status(200).json({
       success: true,
       message: "List of posts of v1",
       posts,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+/*DELETE A POST -requires authentication */
+export const deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(422).json({
+        success: false,
+        message: "Post doesn't exist",
+      });
+    }
+    //authorize user
+    //.id means converting object id into string so that 2 strings can be compared otherwise 2 object ids alwaya gives false
+    // console.log(toString(post.user),req.user._id)
+    //*compare 2 object ids using .equals
+    if (!post.user.equals(req.user._id)) {
+      return res.status(422).json({
+        success: false,
+        message: "You are not authorized to delete this Post!",
+      });
+    }
+
+    // post.remove()
+    await Post.findByIdAndDelete(postId);
+    await Comment.deleteMany({ post: postId });
+    return res.status(200).json({
+      success: true,
+      message: "Post and associated comments deleted successfully",
     });
   } catch (err) {
     console.log(err);
