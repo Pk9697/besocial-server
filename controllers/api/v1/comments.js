@@ -27,8 +27,10 @@ export const createComment = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Comment on this post created successfully!",
-      comment,
-      post,
+      data:{
+        comment,
+        post
+      }
     });
   } catch (err) {
     console.log(err);
@@ -57,7 +59,7 @@ export const deleteComment=async(req,res)=>{
                 message: "You are not authorized to delete this Comment!",
             });
         }
-
+        //pull out from comments array which matches commentId
         await Post.findByIdAndUpdate(comment.post,{$pull:{comments:commentId}})
         await Comment.findByIdAndDelete(commentId)
         return res.status(200).json({

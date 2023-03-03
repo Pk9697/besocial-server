@@ -75,3 +75,90 @@ export const login = async (req, res) => {
     });
   }
 };
+
+/* GET USER PROFILE -requires authentication*/
+export const getUserProfile=async(req,res)=>{
+  try {
+    const {userId}=req.params
+    const user=await User.findById(userId)
+    if(!user){
+      return res.status(422).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json(
+      {
+        success: true,
+        message: "User fetch successful", 
+        data:{
+          user
+        }
+      }
+    )
+    
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+}
+
+/* UPDATE OWN PROFILE-reqiuires authentication and authorization */
+
+export const updateOwnProfile=async(req,res)=>{
+  try {
+    const {userId}=req.params
+    const {email,password}=req.body
+    
+    if(!email && !password){
+      return res.status(422).json({
+        success: false,
+        message: "No data provided to update profile",
+      });
+    }
+
+    const user=await User.findById(userId)
+    if(!user){
+      return res.status(422).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if(req.user.id!==userId){
+      return res.status(422).json({
+        success: false,
+        message: "You are not authorized to update other user's profile",
+      });
+    }
+
+    const userExists=await User.findOne({email:email})
+    if(userExists){
+      return res.status(422).json({
+        success: false,
+        message: "User with this email already exists",
+      });
+    }
+    const updatedUser=await User.findByIdAndUpdate(userId,req.body,{new:true})
+    return res.status(200).json(
+      {
+        success: true,
+        message: "User Updated successfully", 
+        data:{
+          user:updatedUser
+        }
+      }
+    )
+    
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+}

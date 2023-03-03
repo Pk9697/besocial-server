@@ -15,7 +15,9 @@ export const createPost = async (req, res) => {
       return res.status(200).json({
         success: true,
         message: "Post created successfully!",
-        post: userPopulatedPost,
+        data:{
+          post: userPopulatedPost,
+        }
       });
     }
 
@@ -48,7 +50,9 @@ export const getAllPosts = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "List of posts of v1",
-      posts,
+      data:{
+        posts
+      }
     });
   } catch (err) {
     console.log(err);
