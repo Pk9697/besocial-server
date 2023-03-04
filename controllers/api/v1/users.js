@@ -1,5 +1,10 @@
 import User from "../../../models/user.js";
 import jwt from "jsonwebtoken";
+import fs from "fs";
+import path from "path";
+import fileDirName from "../../../utils/file-dir-name.js";
+
+const { __dirname, __filename } = fileDirName(import.meta);
 
 /* REGISTER */
 export const register = async (req, res) => {
@@ -46,7 +51,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user =await User.findOne({ email});
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(422).json({
         success: false,
@@ -63,7 +68,7 @@ export const login = async (req, res) => {
       success: true,
       message: "Login successful here is your token keep it safe",
       data: {
-        token:jwt.sign(user.toJSON(), 'besocial', { expiresIn: "1d" }),
+        token: jwt.sign(user.toJSON(), "besocial", { expiresIn: "1d" }),
         user,
       },
     });
@@ -77,27 +82,24 @@ export const login = async (req, res) => {
 };
 
 /* GET USER PROFILE -requires authentication*/
-export const getUserProfile=async(req,res)=>{
+export const getUserProfile = async (req, res) => {
   try {
-    const {userId}=req.params
-    const user=await User.findById(userId)
-    if(!user){
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(422).json({
         success: false,
         message: "User not found",
       });
     }
 
-    return res.status(200).json(
-      {
-        success: true,
-        message: "User fetch successful", 
-        data:{
-          user
-        }
-      }
-    )
-    
+    return res.status(200).json({
+      success: true,
+      message: "User fetch successful",
+      data: {
+        user,
+      },
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -105,55 +107,78 @@ export const getUserProfile=async(req,res)=>{
       message: "Internal Server Error",
     });
   }
-}
+};
 
 /* UPDATE OWN PROFILE-reqiuires authentication and authorization */
 
-export const updateOwnProfile=async(req,res)=>{
+export const updateOwnProfile = async (req, res) => {
   try {
-    const {userId}=req.params
-    const {email,password}=req.body
-    
-    if(!email && !password){
-      return res.status(422).json({
-        success: false,
-        message: "No data provided to update profile",
-      });
-    }
-
-    const user=await User.findById(userId)
-    if(!user){
+    const { userId } = req.params;
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(422).json({
         success: false,
         message: "User not found",
       });
     }
 
-    if(req.user.id!==userId){
+    if (req.user.id !== userId) {
       return res.status(422).json({
         success: false,
         message: "You are not authorized to update other user's profile",
       });
     }
 
-    const userExists=await User.findOne({email:email})
-    if(userExists){
-      return res.status(422).json({
-        success: false,
-        message: "User with this email already exists",
-      });
-    }
-    const updatedUser=await User.findByIdAndUpdate(userId,req.body,{new:true})
-    return res.status(200).json(
-      {
-        success: true,
-        message: "User Updated successfully", 
-        data:{
-          user:updatedUser
-        }
+    User.uploadedAvatar(req, res, async function (err) {
+      if (err) {
+        console.log("********Multer error: ", err);
       }
-    )
-    
+      const { email, password, name } = req.body;
+
+      const userExists = await User.findOne({ email: email });
+      if (userExists) {
+        return res.status(422).json({
+          success: false,
+          message: "User with this email already exists",
+        });
+      }
+
+      name && (user.name = name);
+      email && (user.email = email);
+      password && (user.password = password);
+
+      if (req.file) {
+        if (
+          user.avatar &&
+          fs.existsSync(path.join(__dirname, "../../../", user.avatar))
+        ) {
+          fs.unlinkSync(path.join(__dirname, "../../../", user.avatar));
+        }
+        //*so works with '/' also
+        user.avatar = User.avatarPath + `/` + req.file.filename;
+      }
+
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "User Updated successfully",
+        data: {
+          user,
+        },
+      });
+    });
+    //!doesnt work if form body is multipart 
+    // const updatedUser=await User.findByIdAndUpdate(userId,req.body,{new:true})
+    // return res.status(200).json(
+    //   {
+    //     success: true,
+    //     message: "User Updated successfully",
+    //     data:{
+    //       user:updatedUser
+    //     }
+    //   }
+    // )
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -161,4 +186,4 @@ export const updateOwnProfile=async(req,res)=>{
       message: "Internal Server Error",
     });
   }
-}
+};
