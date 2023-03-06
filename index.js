@@ -17,7 +17,7 @@ app.use(bodyParser.urlencoded({extended:false}))
 
 // app.use(passport.initialize());
 // app.use(passport.session());
-//make the uploads path availaible to the browser
+//make the uploads path available to the browser
 app.use('/uploads',express.static(__dirname+'/uploads'));
 //use express router
 app.use("/", router);

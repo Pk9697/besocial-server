@@ -16,6 +16,13 @@ const commentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
     },
+    //include the array of ids of all likes in this comment schema itself for fetching likes for a particular comment faster
+    likes:[
+      {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Like"
+      }
+    ]
   },
   {
     timestamps: true,
