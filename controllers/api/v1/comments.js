@@ -1,5 +1,6 @@
 import Post from "../../../models/post.js";
 import Comment from "../../../models/comment.js";
+import Like from "../../../models/like.js";
 
 export const createComment = async (req, res) => {
   try {
@@ -62,6 +63,7 @@ export const deleteComment=async(req,res)=>{
         //pull out from comments array which matches commentId
         await Post.findByIdAndUpdate(comment.post,{$pull:{comments:commentId}})
         await Comment.findByIdAndDelete(commentId)
+        await Like.deleteMany({likeable:commentId,onModel:'Comment'})
         return res.status(200).json({
             success:true,
             message:'Comment and associated likes deleted successfully and comment is pulled from post'

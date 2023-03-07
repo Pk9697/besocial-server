@@ -1,6 +1,6 @@
 import Comment from "../../../models/comment.js";
 import Post from "../../../models/post.js";
-
+import Like from "../../../models/like.js";
 /* CREATE POST- requires authentication */
 export const createPost = async (req, res) => {
   try {
@@ -46,6 +46,21 @@ export const getAllPosts = async (req, res) => {
         populate: {
           path: "user",
         },
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "likes",
+          populate: {
+            path: "user",
+          },
+        },
+      })
+      .populate({
+        path: "likes",
+        populate: {
+          path: "user",
+        },
       });
     return res.status(200).json({
       success: true,
@@ -86,11 +101,15 @@ export const deletePost = async (req, res) => {
     }
 
     // post.remove()
-    await Post.findByIdAndDelete(postId);
     await Comment.deleteMany({ post: postId });
+    await Like.deleteMany({likeable:postId,onModel:'Post'})
+    //!check if it works
+    await Like.deleteMany({likeable:{$in:post.comments},onModel:'Comment'})
+    await Post.findByIdAndDelete(postId);
+
     return res.status(200).json({
       success: true,
-      message: "Post and associated comments deleted successfully",
+      message: "Post and associated comments and likes deleted successfully",
     });
   } catch (err) {
     console.log(err);

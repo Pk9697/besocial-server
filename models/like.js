@@ -5,6 +5,7 @@ const likeSchema = new mongoose.Schema(
     //who liked it
     user: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     //this defines the object id of the liked object whether post id,or comment id
