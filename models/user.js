@@ -25,7 +25,17 @@ const userSchema = new mongoose.Schema(
     avatar:{
       type:String,
       default:""
-    }
+    },
+    //whenever a friendship is created ,whether a user is from_user or to_user ,
+    //add in this array so that whether i sent the request or received the request,
+    //that is present in this array and we would not have to traverse Friendship model,
+    //again and again to fetch friends faster to optimize our query
+    friends:[
+      {
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Friendship",
+      }
+    ]
   },
   {
     timestamps: true,
