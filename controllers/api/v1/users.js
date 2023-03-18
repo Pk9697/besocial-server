@@ -35,7 +35,7 @@ export const register = async (req, res) => {
       message: "Register successful here is your token keep it safe",
       data: {
         token: jwt.sign(newUser.toJSON(), "besocial", { expiresIn: "1d" }),
-        newUser,
+        user:newUser,
       },
     });
   } catch (err) {
@@ -51,7 +51,13 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email })
+    .populate({
+      path:"friends",
+      populate:{
+        path:"to_user"
+      }
+    });
     if (!user) {
       return res.status(422).json({
         success: false,
@@ -187,3 +193,39 @@ export const updateOwnProfile = async (req, res) => {
     });
   }
 };
+
+// GET ALL USERS except the user making req and his friends requires authentication
+export const getAllUsers=async (req,res)=>{
+  try {
+    const currUser=await User.findById(req.user._id)
+    .populate({
+      path:"friends",
+      populate:{
+        path:"to_user"
+      }
+    });
+    const friends=currUser.friends
+    console.log(friends)
+    const allUsers=await User.find()
+    
+    // const allUsers=await User.find({})
+    const allUsersExceptCurrLoggedInUser=allUsers.filter(user=>!user._id.equals(req.user._id))
+    const allUsersExceptCurrLoggedInUserAndFriends=allUsersExceptCurrLoggedInUser.filter(user=>!friends.find(friend=>friend.to_user._id.equals(user._id)))
+    // console.log(allUsersExceptCurrLoggedInUser)
+    // console.log(allUsersExceptCurrLoggedInUserAndFriends)
+    
+    return res.status(200).json({
+        success: true,
+        message: "All users except self and self friends",
+        data: {
+          users:allUsersExceptCurrLoggedInUserAndFriends,
+        },
+    })
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+}

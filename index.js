@@ -5,12 +5,14 @@ import passport from "passport"
 import passportJWT from "passport-jwt"
 import fileDirName from "./utils/file-dir-name.js";
 import bodyParser from "body-parser"
+import cors from "cors"
 const {__dirname,__filename}=fileDirName(import.meta)
 // console.log(__dirname,__filename)
-const port = 3001;
+const port = 4001;
 const app = express();
 
 /* MIDDLEWARES */
+app.use(cors())
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended:false}))
 // app.use(express.bodyParser())

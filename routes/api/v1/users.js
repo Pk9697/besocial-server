@@ -1,7 +1,7 @@
 import express from "express";
 import passport from "passport"
 import passportJWT from "../../../config/passport-jwt-strategy.js"
-import { register,login, getUserProfile, updateOwnProfile } from "../../../controllers/api/v1/users.js";
+import { register,login, getUserProfile, updateOwnProfile, getAllUsers } from "../../../controllers/api/v1/users.js";
 
 const router = express.Router();
 
@@ -13,6 +13,8 @@ router.post("/login",login)
 router.get("/profile/:userId",passport.authenticate('jwt',{session:false}),getUserProfile)
 /* /api/v1/users/update/:userId */
 router.post("/update/:userId",passport.authenticate('jwt',{session:false}),updateOwnProfile)
+
+router.get("/",passport.authenticate('jwt',{session:false}),getAllUsers)
 //strategy to be given is jwt with session as false so that session cookies are not generated
 //authentication check
 //If authentication is successful, the user will be logged in and populated at req.user and 
