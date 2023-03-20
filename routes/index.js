@@ -1,9 +1,9 @@
-import express from "express";
-import apiRouter from "./api/index.js";
+import express from 'express'
+import apiRouter from './api/index.js'
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/", (req, res) => res.send("Homepage"));
-router.use("/api", apiRouter);
+router.get('/', (req, res) => res.send('Homepage'))
+router.use('/api', apiRouter)
 
-export default router;
+export default router
