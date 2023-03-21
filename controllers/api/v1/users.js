@@ -118,33 +118,61 @@ export const getUserProfile = async (req, res) => {
 
 export const updateOwnProfile = async (req, res) => {
 	try {
-		const { userId } = req.params
-		const user = await User.findById(userId)
-		if (!user) {
-			return res.status(422).json({
-				success: false,
-				message: 'User not found',
-			})
-		}
+		// const { userId } = req.params
+		// const user = await User.findById(userId)
+		// if (!user) {
+		// 	return res.status(422).json({
+		// 		success: false,
+		// 		message: 'User not found',
+		// 	})
+		// }
 
-		if (req.user.id !== userId) {
-			return res.status(422).json({
-				success: false,
-				message: "You are not authorized to update other user's profile",
-			})
-		}
+		// if (req.user.id !== userId) {
+		// 	return res.status(422).json({
+		// 		success: false,
+		// 		message: "You are not authorized to update other user's profile",
+		// 	})
+		// }
 
 		User.uploadedAvatar(req, res, async function (err) {
 			if (err) {
 				console.log('********Multer error: ', err)
 			}
-			const { email, password, name } = req.body
+			const { email, password ,confirmPassword:confirm_password, name, userId } = req.body
+			// console.log(userId)
+			const user = await User.findById(userId).populate({
+				path: 'friends',
+				populate: {
+					path: 'to_user',
+				},
+			})
 
-			const userExists = await User.findOne({ email: email })
-			if (userExists) {
+			if (!user) {
 				return res.status(422).json({
 					success: false,
-					message: 'User with this email already exists',
+					message: 'User not found!',
+				})
+			}
+
+			if (req.user.id !== userId) {
+				return res.status(422).json({
+					success: false,
+					message: "You are not authorized to update other user's profile!",
+				})
+			}
+
+			if (password !== confirm_password) {
+				return res.status(422).json({
+					success: false,
+					message: "Password & Confirm Password do not match!",
+				})
+			}
+
+			const userExists = await User.findOne({ email: email })
+			if (userExists && userExists.email!==user.email) {
+				return res.status(422).json({
+					success: false,
+					message: 'User with this email already exists!',
 				})
 			}
 
@@ -169,6 +197,7 @@ export const updateOwnProfile = async (req, res) => {
 				success: true,
 				message: 'User Updated successfully',
 				data: {
+					token:jwt.sign(user.toJSON(), 'besocial', { expiresIn: '1d' }),
 					user,
 				},
 			})
@@ -203,7 +232,7 @@ export const getAllUsers = async (req, res) => {
 			},
 		})
 		const friends = currUser.friends
-		console.log(friends)
+		// console.log(friends)
 		const allUsers = await User.find()
 
 		// const allUsers=await User.find({})

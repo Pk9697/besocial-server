@@ -21,9 +21,10 @@ router.get(
 	passport.authenticate('jwt', { session: false }),
 	getUserProfile
 )
-/* /api/v1/users/update/:userId */
+/*prev route-> /api/v1/users/update/:userId */
+/* /api/v1/users/edit */
 router.post(
-	'/update/:userId',
+	'/edit',
 	passport.authenticate('jwt', { session: false }),
 	updateOwnProfile
 )
