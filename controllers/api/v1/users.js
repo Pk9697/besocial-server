@@ -138,7 +138,13 @@ export const updateOwnProfile = async (req, res) => {
 			if (err) {
 				console.log('********Multer error: ', err)
 			}
-			const { email, password ,confirmPassword:confirm_password, name, userId } = req.body
+			const {
+				email,
+				password,
+				confirmPassword: confirm_password,
+				name,
+				userId,
+			} = req.body
 			// console.log(userId)
 			const user = await User.findById(userId).populate({
 				path: 'friends',
@@ -164,12 +170,12 @@ export const updateOwnProfile = async (req, res) => {
 			if (password !== confirm_password) {
 				return res.status(422).json({
 					success: false,
-					message: "Password & Confirm Password do not match!",
+					message: 'Password & Confirm Password do not match!',
 				})
 			}
 
 			const userExists = await User.findOne({ email: email })
-			if (userExists && userExists.email!==user.email) {
+			if (userExists && userExists.email !== user.email) {
 				return res.status(422).json({
 					success: false,
 					message: 'User with this email already exists!',
@@ -197,7 +203,7 @@ export const updateOwnProfile = async (req, res) => {
 				success: true,
 				message: 'User Updated successfully',
 				data: {
-					token:jwt.sign(user.toJSON(), 'besocial', { expiresIn: '1d' }),
+					token: jwt.sign(user.toJSON(), 'besocial', { expiresIn: '1d' }),
 					user,
 				},
 			})
@@ -225,34 +231,40 @@ export const updateOwnProfile = async (req, res) => {
 // GET ALL USERS except the user making req and his friends requires authentication
 export const getAllUsers = async (req, res) => {
 	try {
-		const currUser = await User.findById(req.user._id).populate({
-			path: 'friends',
-			populate: {
-				path: 'to_user',
-			},
-		})
-		const friends = currUser.friends
+		// const currUser = await User.findById(req.user._id).populate({
+		// 	path: 'friends',
+		// 	populate: {
+		// 		path: 'to_user',
+		// 	},
+		// })
+		// const friends = currUser.friends
 		// console.log(friends)
 		const allUsers = await User.find()
-
+		return res.status(200).json({
+			success: true,
+			message: 'All users',
+			data: {
+				users: allUsers,
+			},
+		})
 		// const allUsers=await User.find({})
-		const allUsersExceptCurrLoggedInUser = allUsers.filter(
-			(user) => !user._id.equals(req.user._id)
-		)
-		const allUsersExceptCurrLoggedInUserAndFriends =
-			allUsersExceptCurrLoggedInUser.filter(
-				(user) => !friends.find((friend) => friend.to_user._id.equals(user._id))
-			)
+		// const allUsersExceptCurrLoggedInUser = allUsers.filter(
+		// 	(user) => !user._id.equals(req.user._id)
+		// )
+		// const allUsersExceptCurrLoggedInUserAndFriends =
+		// 	allUsersExceptCurrLoggedInUser.filter(
+		// 		(user) => !friends.find((friend) => friend.to_user._id.equals(user._id))
+		// 	)
 		// console.log(allUsersExceptCurrLoggedInUser)
 		// console.log(allUsersExceptCurrLoggedInUserAndFriends)
 
-		return res.status(200).json({
-			success: true,
-			message: 'All users except self and self friends',
-			data: {
-				users: allUsersExceptCurrLoggedInUserAndFriends,
-			},
-		})
+		// return res.status(200).json({
+		// 	success: true,
+		// 	message: 'All users except self and self friends',
+		// 	data: {
+		// 		users: allUsersExceptCurrLoggedInUserAndFriends,
+		// 	},
+		// })
 	} catch (err) {
 		console.log(err)
 		return res.status(500).json({

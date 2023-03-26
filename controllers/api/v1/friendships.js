@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken'
 import Friendship from '../../../models/friendship.js'
 import User from '../../../models/user.js'
 
@@ -66,8 +67,9 @@ export const toggleFriendship = async (req, res) => {
 
 export const getAllUserFriends = async (req, res) => {
 	try {
-		const friends = await Friendship.find({ from_user: req.user._id })
-			.populate('to_user')
+		const friends = await Friendship.find({ from_user: req.user._id }).populate(
+			'to_user'
+		)
 		return res.status(200).json({
 			success: true,
 			message: `List of friends for user id ${req.user._id}`,
@@ -85,7 +87,7 @@ export const getAllUserFriends = async (req, res) => {
 /* api/v1/friendship/create_friendship?user_id=<user_id> */
 export const createFriendship = async (req, res) => {
 	try {
-		const user_id = req.query
+		const { user_id } = req.query
 		const user = await User.findById(user_id)
 		if (!user) {
 			return res.status(422).json({
@@ -111,6 +113,9 @@ export const createFriendship = async (req, res) => {
 			from_user: req.user._id,
 			to_user: user_id,
 		})
+
+		// await newFriendship.populate('from_user').populate('to_user')
+		const populateFriendship = await Friendship.findById(newFriendship._id)
 			.populate('from_user')
 			.populate('to_user')
 		//?should i push in friend.friendship too? acc to Arpan yes
@@ -125,13 +130,15 @@ export const createFriendship = async (req, res) => {
 			success: true,
 			message: `Now you are friends with ${user.name}`,
 			data: {
-				friendship: newFriendship,
+				friendship: populateFriendship,
+				loggedInUser,
+				token: jwt.sign(loggedInUser.toJSON(), 'besocial', { expiresIn: '1d' }),
 			},
 		})
 	} catch (err) {
 		return res.status(500).json({
 			success: false,
-			message: 'Internal Server Error!',
+			message: `Internal Server Error! ${err}`,
 		})
 	}
 }
@@ -170,6 +177,10 @@ export const removeFriendship = async (req, res) => {
 		return res.status(200).json({
 			success: true,
 			message: `${user.name} removed from friends`,
+			data: {
+				loggedInUser,
+				token: jwt.sign(loggedInUser.toJSON(), 'besocial', { expiresIn: '1d' }),
+			},
 		})
 	} catch (err) {
 		return res.status(500).json({
