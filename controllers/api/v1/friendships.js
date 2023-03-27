@@ -96,6 +96,13 @@ export const createFriendship = async (req, res) => {
 			})
 		}
 
+		if (req.user.id === user_id) {
+			return res.status(422).json({
+				success: false,
+				message: 'You cannot be a friend to yourself!',
+			})
+		}
+
 		//check if already friends
 		const alreadyFriends = await Friendship.findOne({
 			from_user: req.user._id,
@@ -151,6 +158,14 @@ export const removeFriendship = async (req, res) => {
 			return res.status(422).json({
 				success: false,
 				message: 'User you are trying to remove as a friend does not exist!',
+			})
+		}
+
+		if (req.user.id === user_id) {
+			return res.status(422).json({
+				success: false,
+				message:
+					'You cannot remove yourself as you cannot be a friend to yourself!',
 			})
 		}
 
