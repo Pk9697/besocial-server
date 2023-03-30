@@ -25,11 +25,12 @@ export const createComment = async (req, res) => {
 		post.comments = [comment._id, ...post.comments]
 		post.save()
 
+		const userPopulatedComment=await Comment.findById(comment._id).populate('user')
 		return res.status(200).json({
 			success: true,
 			message: 'Comment on this post created successfully!',
 			data: {
-				comment,
+				comment:userPopulatedComment,
 				post,
 			},
 		})
