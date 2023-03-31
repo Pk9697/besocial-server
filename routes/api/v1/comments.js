@@ -15,7 +15,7 @@ router.post(
 )
 /* /api/v1/comments/delete/:commentId */
 router.delete(
-	'/delete/:commentId',
+	'/delete/',
 	passport.authenticate('jwt', { session: false }),
 	deleteComment
 )

@@ -25,12 +25,14 @@ export const createComment = async (req, res) => {
 		post.comments = [comment._id, ...post.comments]
 		post.save()
 
-		const userPopulatedComment=await Comment.findById(comment._id).populate('user')
+		const userPopulatedComment = await Comment.findById(comment._id).populate(
+			'user'
+		)
 		return res.status(200).json({
 			success: true,
 			message: 'Comment on this post created successfully!',
 			data: {
-				comment:userPopulatedComment,
+				comment: userPopulatedComment,
 				post,
 			},
 		})
@@ -45,7 +47,7 @@ export const createComment = async (req, res) => {
 
 export const deleteComment = async (req, res) => {
 	try {
-		const { commentId } = req.params
+		const { commentId, postUserId } = req.query
 		const comment = await Comment.findById(commentId)
 		if (!comment) {
 			return res.status(422).json({
@@ -53,9 +55,8 @@ export const deleteComment = async (req, res) => {
 				message: "Comment doesn't exist",
 			})
 		}
-
 		//authorize user
-		if (!comment.user.equals(req.user._id)) {
+		if (postUserId !== req.user.id && !comment.user.equals(req.user._id)) {
 			return res.status(422).json({
 				success: false,
 				message: 'You are not authorized to delete this Comment!',

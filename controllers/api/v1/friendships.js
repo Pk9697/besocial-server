@@ -67,9 +67,9 @@ export const toggleFriendship = async (req, res) => {
 
 export const getAllUserFriends = async (req, res) => {
 	try {
-		const friends = await Friendship.find({ from_user: req.user._id }).populate(
-			'to_user'
-		)
+		const friends = await Friendship.find({ from_user: req.user._id })
+			.populate('to_user')
+			.sort('-createdAt')
 		return res.status(200).json({
 			success: true,
 			message: `List of friends for user id ${req.user._id}`,
