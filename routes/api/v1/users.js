@@ -7,6 +7,7 @@ import {
 	getUserProfile,
 	updateOwnProfile,
 	getAllUsers,
+	searchUser,
 } from '../../../controllers/api/v1/users.js'
 
 const router = express.Router()
@@ -30,6 +31,12 @@ router.post(
 )
 
 router.get('/', passport.authenticate('jwt', { session: false }), getAllUsers)
+
+router.get(
+	'/search',
+	passport.authenticate('jwt', { session: false }),
+	searchUser
+)
 //strategy to be given is jwt with session as false so that session cookies are not generated
 //authentication check
 //If authentication is successful, the user will be logged in and populated at req.user and

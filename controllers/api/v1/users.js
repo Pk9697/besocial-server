@@ -273,3 +273,26 @@ export const getAllUsers = async (req, res) => {
 		})
 	}
 }
+
+export const searchUser = async (req, res) => {
+	try {
+		let { searchText } = req.query
+		searchText = `^${searchText}`
+		const users = await User.find({
+			name: { $regex: searchText, $options: 'i' },
+		})
+		return res.status(200).json({
+			success: true,
+			message: 'Here are your Search results!',
+			data: {
+				users,
+			},
+		})
+	} catch (err) {
+		console.log(err)
+		return res.status(500).json({
+			success: false,
+			message: 'Internal Server Error',
+		})
+	}
+}
