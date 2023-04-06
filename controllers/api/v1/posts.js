@@ -122,3 +122,48 @@ export const deletePost = async (req, res) => {
 		})
 	}
 }
+
+/* GET USER POSTS -authentication is required*/
+export const getUserPosts = async (req, res) => {
+	try {
+		const { userId } = req.params
+		//gets all the posts with recent posts first
+		const posts = await Post.find({ user: userId })
+			.sort('-createdAt')
+			.populate('user')
+			.populate({
+				path: 'comments',
+				populate: {
+					path: 'user',
+				},
+			})
+			.populate({
+				path: 'comments',
+				populate: {
+					path: 'likes',
+					populate: {
+						path: 'user',
+					},
+				},
+			})
+			.populate({
+				path: 'likes',
+				populate: {
+					path: 'user',
+				},
+			})
+		return res.status(200).json({
+			success: true,
+			message: `List of posts of user, ${userId}`,
+			data: {
+				posts,
+			},
+		})
+	} catch (err) {
+		console.log(err)
+		return res.status(500).json({
+			success: false,
+			message: 'Internal Server Error',
+		})
+	}
+}

@@ -86,6 +86,32 @@ export const login = async (req, res) => {
 	}
 }
 
+export const authenticateUser = async (req, res) => {
+	try {
+		const user = await User.findById(req.user._id).populate({
+			path: 'friends',
+			populate: {
+				path: 'to_user',
+			},
+		})
+
+		return res.status(200).json({
+			success: true,
+			message: 'Authentication successful!',
+			data: {
+				// token: jwt.sign(user.toJSON(), 'besocial', { expiresIn: '1d' }),
+				user,
+			},
+		})
+	} catch (err) {
+		console.log(err)
+		return res.status(500).json({
+			success: false,
+			message: 'Internal Server Error',
+		})
+	}
+}
+
 /* GET USER PROFILE -requires authentication*/
 export const getUserProfile = async (req, res) => {
 	try {

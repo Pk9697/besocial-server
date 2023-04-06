@@ -18,9 +18,16 @@ router.post(
 
 /* api/v1/friendship/fetch_user_friends */
 router.get(
-	'/fetch_user_friends',
-	passport.authenticate('jwt', { session: false }),
-	getAllUserFriends
+	'/fetch_user_friends/:userId',
+	passport.authenticate('jwt', { session: false, failWithError: true }),
+	getAllUserFriends,
+	(err, req, res, next) => {
+		return res.status(422).json({
+			success: false,
+			message: 'User Authentication Failed! Logging Out',
+			headers: req.headers,
+		})
+	}
 )
 
 /* api/v1/friendship/create_friendship?user_id=<user_id> */

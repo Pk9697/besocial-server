@@ -5,6 +5,7 @@ import {
 	createPost,
 	deletePost,
 	getAllPosts,
+	getUserPosts,
 } from '../../../controllers/api/v1/posts.js'
 
 const router = express.Router()
@@ -16,6 +17,12 @@ router.post(
 )
 /* /api/v1/posts/ */
 router.get('/', getAllPosts)
+/* /api/v1/posts/:userId */
+router.get(
+	'/:userId',
+	passport.authenticate('jwt', { session: false }),
+	getUserPosts
+)
 /* /api/v1/posts/delete/:postId */
 router.delete(
 	'/delete/:postId',

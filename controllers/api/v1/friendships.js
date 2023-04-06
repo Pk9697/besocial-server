@@ -67,12 +67,13 @@ export const toggleFriendship = async (req, res) => {
 
 export const getAllUserFriends = async (req, res) => {
 	try {
-		const friends = await Friendship.find({ from_user: req.user._id })
+		const { userId } = req.params
+		const friends = await Friendship.find({ from_user: userId })
 			.populate('to_user')
 			.sort('-createdAt')
 		return res.status(200).json({
 			success: true,
-			message: `List of friends for user id ${req.user._id}`,
+			message: `List of friends for user id ${userId}`,
 			data: {
 				friends,
 			},
@@ -126,12 +127,18 @@ export const createFriendship = async (req, res) => {
 			.populate('from_user')
 			.populate('to_user')
 		//?should i push in friend.friendship too? acc to Arpan yes
-		const loggedInUser = await User.findById(req.user._id)
+		let loggedInUser = await User.findById(req.user._id)
 		loggedInUser.friends.push(newFriendship._id)
-		loggedInUser.save()
+		await loggedInUser.save()
 		// friend.friends.push(newFriendship._id)
 		// friend.save()
 		// deleted = false
+		loggedInUser = await User.findById(req.user._id).populate({
+			path: 'friends',
+			populate: {
+				path: 'to_user',
+			},
+		})
 
 		return res.status(200).json({
 			success: true,
@@ -182,11 +189,18 @@ export const removeFriendship = async (req, res) => {
 			})
 		}
 
-		const loggedInUser = await User.findById(req.user._id)
+		let loggedInUser = await User.findById(req.user._id)
 		//remove this friend
-		loggedInUser.friends.pull(alreadyFriends._id)
+		await loggedInUser.friends.pull(alreadyFriends._id)
 		// friend.friends.pull(existingFriends._id)
-		loggedInUser.save()
+		await loggedInUser.save()
+		loggedInUser = await User.findById(req.user._id).populate({
+			path: 'friends',
+			populate: {
+				path: 'to_user',
+			},
+		})
+
 		await Friendship.findByIdAndDelete(alreadyFriends._id)
 
 		return res.status(200).json({

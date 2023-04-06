@@ -8,6 +8,7 @@ import {
 	updateOwnProfile,
 	getAllUsers,
 	searchUser,
+	authenticateUser,
 } from '../../../controllers/api/v1/users.js'
 
 const router = express.Router()
@@ -31,6 +32,18 @@ router.post(
 )
 
 router.get('/', passport.authenticate('jwt', { session: false }), getAllUsers)
+
+router.get(
+	'/authenticate-user',
+	passport.authenticate('jwt', { session: false, failWithError: true }),
+	authenticateUser,
+	(err, req, res, next) => {
+		return res.status(422).json({
+			success: false,
+			message: 'User Authentication Failed! Logging Out',
+		})
+	}
+)
 
 router.get(
 	'/search',
