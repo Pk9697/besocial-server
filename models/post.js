@@ -1,10 +1,14 @@
 import mongoose from 'mongoose'
-
+import multer from 'multer'
+import path from 'path'
+import fileDirName from '../utils/file-dir-name.js'
+const { __dirname, __filename } = fileDirName(import.meta)
+const POST_IMG_PATH = path.join('/uploads/posts')
 const postSchema = new mongoose.Schema(
 	{
 		content: {
 			type: String,
-			required: true,
+			// required: true,
 		},
 		//will refer to object Id of a user who posted with reference to User Schema
 		user: {
@@ -25,11 +29,30 @@ const postSchema = new mongoose.Schema(
 				ref: 'Like',
 			},
 		],
+
+		postImg: {
+			type: String,
+			default: '',
+		},
 	},
 	{
 		timestamps: true,
 	}
 )
+
+const storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+		cb(null, path.join(__dirname, '..', POST_IMG_PATH))
+	},
+	filename: function (req, file, cb) {
+		cb(null, file.fieldname + '-' + Date.now())
+	},
+})
+
+postSchema.statics.uploadedPostImg = multer({ storage: storage }).single(
+	'postImg'
+)
+postSchema.statics.postImgPath = POST_IMG_PATH
 //telling mongoose that this->'Post' is a model in the database
 const Post = mongoose.model('Post', postSchema)
 //now exporting this Post schema which would be used by controllers to access Post model document

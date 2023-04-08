@@ -1,30 +1,71 @@
 import Comment from '../../../models/comment.js'
 import Post from '../../../models/post.js'
 import Like from '../../../models/like.js'
+import fs from 'fs'
+import path from 'path'
+import fileDirName from '../../../utils/file-dir-name.js'
+const { __dirname, __filename } = fileDirName(import.meta)
+
 /* CREATE POST- requires authentication */
 export const createPost = async (req, res) => {
 	try {
-		const { content } = req.body
-		const post = await Post.create({
-			content,
-			//user is already set by passport.authenticate method which was used as a mw
-			user: req.user._id,
-		})
-		if (post) {
-			const userPopulatedPost = await post.populate('user')
-			return res.status(200).json({
-				success: true,
-				message: 'Post created successfully!',
-				data: {
-					post: userPopulatedPost,
-				},
-			})
-		}
+		Post.uploadedPostImg(req, res, async function (err) {
+			if (err) {
+				console.error('********Multer error: ', err)
+			}
+			const { content } = req.body
+			let post
+			if (req.file) {
+				post = await Post.create({
+					content,
+					user: req.user._id,
+					postImg: Post.postImgPath + '/' + req.file.filename,
+				})
+			} else {
+				post = await Post.create({
+					content,
+					user: req.user._id,
+				})
+			}
 
-		return res.status(422).json({
-			success: false,
-			message: 'Unable to create Post!',
+			if (post) {
+				const userPopulatedPost = await post.populate('user')
+				return res.status(200).json({
+					success: true,
+					message: 'Post created successfully!',
+					data: {
+						post: userPopulatedPost,
+					},
+				})
+			}
+
+			return res.status(422).json({
+				success: false,
+				message: 'Unable to create Post!',
+			})
 		})
+
+		// const { content } = req.body
+		// const post = await Post.create({
+		// 	content,
+		// 	//user is already set by passport.authenticate method which was used as a mw
+		// 	user: req.user._id,
+		// })
+		// if (post) {
+		// 	const userPopulatedPost = await post.populate('user')
+		// 	return res.status(200).json({
+		// 		success: true,
+		// 		message: 'Post created successfully!',
+		// 		data: {
+		// 			post: userPopulatedPost,
+		// 		},
+		// 	})
+		// }
+
+		// return res.status(422).json({
+		// 	success: false,
+		// 	message: 'Unable to create Post!',
+		// })
 	} catch (err) {
 		console.log(err)
 		return res.status(500).json({
@@ -98,6 +139,12 @@ export const deletePost = async (req, res) => {
 				success: false,
 				message: 'You are not authorized to delete this Post!',
 			})
+		}
+		if (
+			post.postImg &&
+			fs.existsSync(path.join(__dirname, '../../../', post.postImg))
+		) {
+			fs.unlinkSync(path.join(__dirname, '../../../', post.postImg))
 		}
 
 		// post.remove()
