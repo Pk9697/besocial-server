@@ -6,10 +6,16 @@ import passportJWT from 'passport-jwt'
 import fileDirName from './utils/file-dir-name.js'
 import bodyParser from 'body-parser'
 import cors from 'cors'
+import { createServer } from 'http'
+import chatSockets from './config/chat_sockets.js'
 const { __dirname, __filename } = fileDirName(import.meta)
 // console.log(__dirname,__filename)
 const port = 4001
 const app = express()
+
+const httpServer = createServer(app)
+chatSockets(httpServer)
+httpServer.listen(5000)
 
 /* MIDDLEWARES */
 app.use(cors())
