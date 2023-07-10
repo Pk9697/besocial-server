@@ -9,7 +9,7 @@ export default function chatSockets(socketServer) {
 		console.log('new connection received', socket.id)
 		socket.on('disconnect', () => console.log('socket disconnected!'))
 		socket.on('join_room', (data) => {
-			console.log('joining req received...!', data)
+			// console.log('joining req received...!', data)
 			socket.join(data.chatroom)
 			io.in(data.chatroom).emit('user_joined', data)
 		})

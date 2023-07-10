@@ -30,12 +30,15 @@ export const register = async (req, res) => {
 			name,
 		})
 
+		const { password: pass, ...newUserWithoutPass } = newUser?._doc
+		// console.log({newUserWithoutPass})
+
 		return res.status(201).json({
 			success: true,
 			message: 'Register successful here is your token keep it safe',
 			data: {
-				token: jwt.sign(newUser.toJSON(), 'besocial', { expiresIn: '1d' }),
-				user: newUser,
+				token: jwt.sign(newUserWithoutPass, 'besocial', { expiresIn: '1d' }),
+				user: newUserWithoutPass,
 			},
 		})
 	} catch (err) {
@@ -51,7 +54,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
 	try {
 		const { email, password } = req.body
-		const user = await User.findOne({ email }).populate({
+		const user = await User.findOne({ email }).select('+password').populate({
 			path: 'friends',
 			populate: {
 				path: 'to_user',
@@ -69,12 +72,16 @@ export const login = async (req, res) => {
 				message: 'Password wrong',
 			})
 		}
+
+		const { password: pass, ...userWithoutPass } = user?._doc
+		// console.log({ userWithoutPass })
+		
 		return res.status(200).json({
 			success: true,
 			message: 'Login successful here is your token keep it safe',
 			data: {
-				token: jwt.sign(user.toJSON(), 'besocial', { expiresIn: '1d' }),
-				user,
+				token: jwt.sign(userWithoutPass, 'besocial', { expiresIn: '1d' }),
+				user:userWithoutPass,
 			},
 		})
 	} catch (err) {
@@ -95,12 +102,14 @@ export const authenticateUser = async (req, res) => {
 			},
 		})
 
+		const { password: pass, ...userWithoutPass } = user?._doc
+
 		return res.status(200).json({
 			success: true,
 			message: 'Authentication successful!',
 			data: {
 				// token: jwt.sign(user.toJSON(), 'besocial', { expiresIn: '1d' }),
-				user,
+				user:userWithoutPass,
 			},
 		})
 	} catch (err) {
@@ -123,6 +132,9 @@ export const getUserProfile = async (req, res) => {
 				message: 'User not found',
 			})
 		}
+
+		//* Extract Pass Not needed here
+		// const { password: pass, ...userWithoutPass } = user?._doc
 
 		return res.status(200).json({
 			success: true,
@@ -172,7 +184,7 @@ export const updateOwnProfile = async (req, res) => {
 				userId,
 			} = req.body
 			// console.log(userId)
-			const user = await User.findById(userId).populate({
+			const user = await User.findById(userId).select('+password').populate({
 				path: 'friends',
 				populate: {
 					path: 'to_user',
@@ -199,6 +211,8 @@ export const updateOwnProfile = async (req, res) => {
 					message: 'Password & Confirm Password do not match!',
 				})
 			}
+			
+			//TODO old password check but first update front end for addding this input field 
 
 			const userExists = await User.findOne({ email: email })
 			if (userExists && userExists.email !== user.email) {
@@ -225,12 +239,16 @@ export const updateOwnProfile = async (req, res) => {
 
 			await user.save()
 
+			console.log({user})
+
+			const { password: pass, ...userWithoutPass } = user?._doc
+
 			return res.status(200).json({
 				success: true,
 				message: 'User Updated successfully',
 				data: {
-					token: jwt.sign(user.toJSON(), 'besocial', { expiresIn: '1d' }),
-					user,
+					token: jwt.sign(userWithoutPass, 'besocial', { expiresIn: '1d' }),
+					user:userWithoutPass,
 				},
 			})
 		})
