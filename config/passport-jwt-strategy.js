@@ -1,13 +1,14 @@
 import passport from 'passport'
 import passportJWT from 'passport-jwt'
 import User from '../models/user.js'
+import env from './environment.js'
 
 const JWTStrategy = passportJWT.Strategy
 const ExtractJWT = passportJWT.ExtractJwt
 
 const opts = {
 	jwtFromRequest: ExtractJWT.fromAuthHeaderWithScheme('Bearer'),
-	secretOrKey: 'besocial',
+	secretOrKey: env.jwt_secret_key,
 }
 
 passport.use(

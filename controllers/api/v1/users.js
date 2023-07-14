@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import fs from 'fs'
 import path from 'path'
 import fileDirName from '../../../utils/file-dir-name.js'
+import env from '../../../config/environment.js'
 
 const { __dirname, __filename } = fileDirName(import.meta)
 
@@ -37,7 +38,9 @@ export const register = async (req, res) => {
 			success: true,
 			message: 'Register successful here is your token keep it safe',
 			data: {
-				token: jwt.sign(newUserWithoutPass, 'besocial', { expiresIn: '1d' }),
+				token: jwt.sign(newUserWithoutPass, env.jwt_secret_key, {
+					expiresIn: '1d',
+				}),
 				user: newUserWithoutPass,
 			},
 		})
@@ -54,12 +57,14 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
 	try {
 		const { email, password } = req.body
-		const user = await User.findOne({ email }).select('+password').populate({
-			path: 'friends',
-			populate: {
-				path: 'to_user',
-			},
-		})
+		const user = await User.findOne({ email })
+			.select('+password')
+			.populate({
+				path: 'friends',
+				populate: {
+					path: 'to_user',
+				},
+			})
 		if (!user) {
 			return res.status(422).json({
 				success: false,
@@ -75,13 +80,15 @@ export const login = async (req, res) => {
 
 		const { password: pass, ...userWithoutPass } = user?._doc
 		// console.log({ userWithoutPass })
-		
+
 		return res.status(200).json({
 			success: true,
 			message: 'Login successful here is your token keep it safe',
 			data: {
-				token: jwt.sign(userWithoutPass, 'besocial', { expiresIn: '1d' }),
-				user:userWithoutPass,
+				token: jwt.sign(userWithoutPass, env.jwt_secret_key, {
+					expiresIn: '1d',
+				}),
+				user: userWithoutPass,
 			},
 		})
 	} catch (err) {
@@ -108,8 +115,8 @@ export const authenticateUser = async (req, res) => {
 			success: true,
 			message: 'Authentication successful!',
 			data: {
-				// token: jwt.sign(user.toJSON(), 'besocial', { expiresIn: '1d' }),
-				user:userWithoutPass,
+				// token: jwt.sign(user.toJSON(), env.jwt_secret_key, { expiresIn: '1d' }),
+				user: userWithoutPass,
 			},
 		})
 	} catch (err) {
@@ -184,12 +191,14 @@ export const updateOwnProfile = async (req, res) => {
 				userId,
 			} = req.body
 			// console.log(userId)
-			const user = await User.findById(userId).select('+password').populate({
-				path: 'friends',
-				populate: {
-					path: 'to_user',
-				},
-			})
+			const user = await User.findById(userId)
+				.select('+password')
+				.populate({
+					path: 'friends',
+					populate: {
+						path: 'to_user',
+					},
+				})
 
 			if (!user) {
 				return res.status(422).json({
@@ -211,8 +220,8 @@ export const updateOwnProfile = async (req, res) => {
 					message: 'Password & Confirm Password do not match!',
 				})
 			}
-			
-			//TODO old password check but first update front end for addding this input field 
+
+			//TODO old password check but first update front end for addding this input field
 
 			const userExists = await User.findOne({ email: email })
 			if (userExists && userExists.email !== user.email) {
@@ -239,16 +248,16 @@ export const updateOwnProfile = async (req, res) => {
 
 			await user.save()
 
-			console.log({user})
-
 			const { password: pass, ...userWithoutPass } = user?._doc
 
 			return res.status(200).json({
 				success: true,
 				message: 'User Updated successfully',
 				data: {
-					token: jwt.sign(userWithoutPass, 'besocial', { expiresIn: '1d' }),
-					user:userWithoutPass,
+					token: jwt.sign(userWithoutPass, env.jwt_secret_key, {
+						expiresIn: '1d',
+					}),
+					user: userWithoutPass,
 				},
 			})
 		})

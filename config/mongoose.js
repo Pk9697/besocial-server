@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import env from './environment.js'
 
 const uri =
 	'mongodb+srv://dummyuser:dummyuser123@cluster0.prpfhg1.mongodb.net/?retryWrites=true&w=majority'
@@ -7,7 +8,7 @@ const uri =
 mongoose.connect(uri, {
 	useNewUrlParser: true,
 	useUnifiedTopology: true,
-	dbName: 'besocial-dev',
+	dbName: env.db,
 })
 
 //acquire the connection (to check if it is successful)

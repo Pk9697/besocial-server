@@ -1,12 +1,13 @@
 import express from 'express'
-import router from './routes/index.js'
-import db from './config/mongoose.js'
+import 'dotenv/config'
 import passport from 'passport'
 import passportJWT from 'passport-jwt'
-import fileDirName from './utils/file-dir-name.js'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import { createServer } from 'http'
+import router from './routes/index.js'
+import db from './config/mongoose.js'
+import fileDirName from './utils/file-dir-name.js'
 import chatSockets from './config/chat_sockets.js'
 const { __dirname, __filename } = fileDirName(import.meta)
 // console.log(__dirname,__filename)

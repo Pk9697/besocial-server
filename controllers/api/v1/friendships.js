@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import Friendship from '../../../models/friendship.js'
 import User from '../../../models/user.js'
+import env from '../../../config/environment.js'
 
 export const toggleFriendship = async (req, res) => {
 	try {
@@ -146,7 +147,9 @@ export const createFriendship = async (req, res) => {
 			data: {
 				friendship: populateFriendship,
 				loggedInUser,
-				token: jwt.sign(loggedInUser.toJSON(), 'besocial', { expiresIn: '1d' }),
+				token: jwt.sign(loggedInUser.toJSON(), env.jwt_secret_key, {
+					expiresIn: '1d',
+				}),
 			},
 		})
 	} catch (err) {
@@ -208,7 +211,9 @@ export const removeFriendship = async (req, res) => {
 			message: `${user.name} removed from friends`,
 			data: {
 				loggedInUser,
-				token: jwt.sign(loggedInUser.toJSON(), 'besocial', { expiresIn: '1d' }),
+				token: jwt.sign(loggedInUser.toJSON(), env.jwt_secret_key, {
+					expiresIn: '1d',
+				}),
 			},
 		})
 	} catch (err) {
