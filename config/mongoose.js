@@ -1,8 +1,7 @@
 import mongoose from 'mongoose'
 import env from './environment.js'
 
-const uri =
-	'mongodb+srv://dummyuser:dummyuser123@cluster0.prpfhg1.mongodb.net/?retryWrites=true&w=majority'
+const uri = process.env.BESOCIAL_MONGODB_URI
 
 //connect to database
 mongoose.connect(uri, {
