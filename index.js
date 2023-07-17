@@ -16,7 +16,7 @@ const app = express()
 
 const httpServer = createServer(app)
 chatSockets(httpServer)
-httpServer.listen(5000)
+httpServer.listen(5001)
 
 /* MIDDLEWARES */
 app.use(cors())
