@@ -12,11 +12,19 @@ import chatSockets from './config/chat_sockets.js'
 const { __dirname, __filename } = fileDirName(import.meta)
 // console.log(__dirname,__filename)
 const port = 4001
+const chatPort = 5001
 const app = express()
 
 const httpServer = createServer(app)
 chatSockets(httpServer)
-httpServer.listen(5001)
+/* RUN CHAT SERVER */
+httpServer.listen(chatPort, function (err) {
+	if (err) {
+		console.log(`Error in running chat server : ${err}`)
+	}
+
+	console.log(`Chat Server is running on port: ${chatPort}`)
+})
 
 /* MIDDLEWARES */
 app.use(cors())
