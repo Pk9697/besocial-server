@@ -18,7 +18,7 @@ const app = express()
 const httpServer = createServer(app)
 chatSockets(httpServer)
 /* RUN CHAT SERVER */
-httpServer.listen(chatPort, function (err) {
+httpServer.listen(chatPort,'0.0.0.0', function (err) {
 	if (err) {
 		console.log(`Error in running chat server : ${err}`)
 	}
