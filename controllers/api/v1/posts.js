@@ -4,6 +4,8 @@ import Like from '../../../models/like.js'
 import fs from 'fs'
 import path from 'path'
 import fileDirName from '../../../utils/file-dir-name.js'
+import sharp from 'sharp'
+
 const { __dirname, __filename } = fileDirName(import.meta)
 
 /* CREATE POST- requires authentication */
@@ -12,14 +14,50 @@ export const createPost = async (req, res) => {
 		Post.uploadedPostImg(req, res, async function (err) {
 			if (err) {
 				console.error('********Multer error: ', err)
+				return res.status(422).json({
+					success: false,
+					message: err.message,
+				})
 			}
 			const { content } = req.body
 			let post
-			if (req.file) {
+			const file = req.file
+			if (file) {
+				const stats = fs.statSync(file.path)
+				const fileSizeInBytes = stats.size;
+				// Convert the file size to megabytes 
+				const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
+				let quality = 100;
+				
+				if (fileSizeInMegabytes > 10) {
+					quality=10
+				} else if (fileSizeInMegabytes > 5 && fileSizeInMegabytes <= 10) {
+					quality=20
+				} else if (fileSizeInMegabytes > 1 && fileSizeInMegabytes <= 5) {
+					quality=30
+				} else if (fileSizeInMegabytes > 0.5 && fileSizeInMegabytes <= 1) {
+					quality=50
+				}
+
+
+				const newFileName = file.fieldname + '-' + Date.now()
+				const newFilePath = path.join(file.destination, newFileName)
+				console.log({ file, newFileName })
+
+				await sharp(file.path)
+					// .resize()
+					.jpeg({ quality: quality })
+					// .toFormat('jpeg', { mozjpeg: true })
+					.toFile(newFilePath)
+
+				if (fs.existsSync(file.path)) {
+					fs.unlinkSync(file.path)
+				}
+
 				post = await Post.create({
 					content,
 					user: req.user._id,
-					postImg: Post.postImgPath + '/' + req.file.filename,
+					postImg: Post.postImgPath + '/' + newFileName,
 				})
 			} else {
 				post = await Post.create({

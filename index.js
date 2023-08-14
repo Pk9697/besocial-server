@@ -11,14 +11,14 @@ import fileDirName from './utils/file-dir-name.js'
 import chatSockets from './config/chat_sockets.js'
 const { __dirname, __filename } = fileDirName(import.meta)
 // console.log(__dirname,__filename)
-const port = process.env.PORT || 4001
+const port = process.env.BESOCIAL_PORT || 4001
 const chatPort = 5001
 const app = express()
 
 const httpServer = createServer(app)
 chatSockets(httpServer)
 /* RUN CHAT SERVER */
-httpServer.listen(chatPort,'0.0.0.0', function (err) {
+httpServer.listen(chatPort, function (err) {
 	if (err) {
 		console.log(`Error in running chat server : ${err}`)
 	}
@@ -40,7 +40,7 @@ app.use('/uploads', express.static(__dirname + '/uploads'))
 app.use('/', router)
 
 /* RUN SERVER */
-app.listen(port, '0.0.0.0', function (err) {
+app.listen(port, function (err) {
 	if (err) {
 		console.log(`Error in running server : ${err}`)
 	}

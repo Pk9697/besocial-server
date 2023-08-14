@@ -5,7 +5,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"start": "node index.js",
+		"start": "nodemon index.js",
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"prod_start": "node index.js"
 	},
@@ -22,6 +22,7 @@
 		"nodemon": "^2.0.21",
 		"passport": "^0.6.0",
 		"passport-jwt": "^4.0.1",
+		"sharp": "^0.32.4",
 		"socket.io": "^4.6.1"
 	}
 }
