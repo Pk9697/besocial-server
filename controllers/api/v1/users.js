@@ -2,6 +2,7 @@ import User from '../../../models/user.js'
 import jwt from 'jsonwebtoken'
 import fs from 'fs'
 import path from 'path'
+import sharp from 'sharp'
 import fileDirName from '../../../utils/file-dir-name.js'
 import env from '../../../config/environment.js'
 
@@ -182,6 +183,10 @@ export const updateOwnProfile = async (req, res) => {
 		User.uploadedAvatar(req, res, async function (err) {
 			if (err) {
 				console.log('********Multer error: ', err)
+				return res.status(422).json({
+					success: false,
+					message: err.message,
+				})
 			}
 			const {
 				email,
@@ -234,16 +239,48 @@ export const updateOwnProfile = async (req, res) => {
 			name && (user.name = name)
 			email && (user.email = email)
 			password && (user.password = password)
-
-			if (req.file) {
+			
+			const file = req.file
+			if (file) {
 				if (
 					user.avatar &&
 					fs.existsSync(path.join(__dirname, '../../../', user.avatar))
 				) {
+					//DELETE prev file
 					fs.unlinkSync(path.join(__dirname, '../../../', user.avatar))
 				}
+
+				const stats = fs.statSync(file.path)
+				const fileSizeInBytes = stats.size;
+				// Convert the file size to megabytes 
+				const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
+				let quality = 100;
+				
+				if (fileSizeInMegabytes > 10) {
+					quality=10
+				} else if (fileSizeInMegabytes > 5 && fileSizeInMegabytes <= 10) {
+					quality=20
+				} else if (fileSizeInMegabytes > 1 && fileSizeInMegabytes <= 5) {
+					quality=30
+				} else if (fileSizeInMegabytes > 0.5 && fileSizeInMegabytes <= 1) {
+					quality=50
+				}
+
+				const newFileName = file.fieldname + '-' + Date.now()
+				const newFilePath = path.join(file.destination, newFileName)
+				// console.log({ file, newFileName })
+
+				await sharp(file.path)
+					// .resize()
+					.jpeg({ quality: quality })
+					// .toFormat('jpeg', { mozjpeg: true })
+					.toFile(newFilePath)
+
+				if (fs.existsSync(file.path)) {
+					fs.unlinkSync(file.path)
+				}
 				//*so works with '/' also
-				user.avatar = User.avatarPath + `/` + req.file.filename
+				user.avatar = User.avatarPath + `/` + newFileName
 			}
 
 			await user.save()

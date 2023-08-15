@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
 		password: {
 			type: String,
 			required: true,
-			select: false
+			select: false,
 		},
 		name: {
 			type: String,
@@ -54,9 +54,16 @@ const storage = multer.diskStorage({
 
 //static fxns or methods which will be accessed in usersController update fxn
 //.single ensures only 1 file will be uploaded with the fieldname avatar
-userSchema.statics.uploadedAvatar = multer({ storage: storage }).single(
-	'avatar'
-)
+userSchema.statics.uploadedAvatar = multer({
+	storage: storage,
+	fileFilter: function (req, file, callback) {
+		const uploadType = file.mimetype.split('/')[0]
+		if (uploadType !== 'image') {
+			return callback(new Error('Only images are allowed'))
+		}
+		callback(null, true)
+	},
+}).single('avatar')
 userSchema.statics.avatarPath = AVATAR_PATH
 
 //telling mongoose that this->'User' is a model in the database

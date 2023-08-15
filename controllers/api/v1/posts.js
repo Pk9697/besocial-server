@@ -42,7 +42,7 @@ export const createPost = async (req, res) => {
 
 				const newFileName = file.fieldname + '-' + Date.now()
 				const newFilePath = path.join(file.destination, newFileName)
-				console.log({ file, newFileName })
+				// console.log({ file, newFileName })
 
 				await sharp(file.path)
 					// .resize()
